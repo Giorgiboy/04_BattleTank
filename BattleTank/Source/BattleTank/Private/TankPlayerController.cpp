@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TankPlayerController.h"
+#include "Runtime/Engine/Public/DrawDebugHelpers.h"
 #include "Engine/World.h"
 
 void ATankPlayerController::BeginPlay(){
@@ -27,16 +28,15 @@ void ATankPlayerController::AimTowardsCrosshair(){
 	}
 	FVector HitLocation;
 	if (GetSightRayHitLocation(HitLocation)) {
+		DrawDebugLine(GetWorld(), PlayerCameraManager->GetCameraLocation(), HitLocation, FColor::Red, false, 0.1, 1, 2);
 		GetControlledTank()->AimAt(HitLocation);
 	}
 }
 
 bool ATankPlayerController::GetSightRayHitLocation(OUT FVector& OutHitLocation) const{
-	OutHitLocation = FVector(1.0);
 	int32 ViewportSizeX, ViewportSizeY;
 	GetViewportSize(ViewportSizeX, ViewportSizeY);
 	FVector2D ScreenLocation = FVector2D(ViewportSizeX * CrossHairXLocation, ViewportSizeY * CrossHairYLocation);
-
 	FVector LookDirection;
 
 	if (GetCameraLookDirection(ScreenLocation, LookDirection)) {

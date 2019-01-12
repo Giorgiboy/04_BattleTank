@@ -2,7 +2,8 @@
 
 #include	"TankAimingComponent.h"
 #include	"GameFramework/Actor.h"
-#include	"Runtime/Engine/Public/DrawDebugHelpers.h"
+#include	"TankBarrel.h"
+#include	"TankTurret.h"
 #include	"Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include	"Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 
@@ -15,8 +16,12 @@ UTankAimingComponent::UTankAimingComponent(){
 	// ...
 }
 
-void UTankAimingComponent::SetBarrelReference(UStaticMeshComponent* BarrelReference) {
+void UTankAimingComponent::SetBarrelReference(UTankBarrel* BarrelReference) {
 	Barrel = BarrelReference;
+}
+
+void UTankAimingComponent::SetTurretReference(UTankTurret * TurretReference){
+	Turret = TurretReference;
 }
 
 // Called when the game starts
@@ -47,18 +52,29 @@ void UTankAimingComponent::AimAt(FVector TargetLocation, float FiringSpeed){
 		StartLocation,
 		TargetLocation,
 		FiringSpeed,
+		false,
+		0,
+		0,
 		ESuggestProjVelocityTraceOption::DoNotTrace
 	);
 	if (bHaveAimSolution) {
 		auto AimDirection = OutLaunchVelocity.GetSafeNormal();
-		DrawDebugLine(GetWorld(), StartLocation, (StartLocation + AimDirection * FiringSpeed), FColor::Red, false, 0.1f, 1);
-		UE_LOG(LogTemp, Warning, TEXT("I am aiming at %s"),  *AimDirection.ToString());
-	}	
+		MoveBarrelToward(AimDirection);
+		auto Time = GetWorld()->TimeSeconds;
+		//UE_LOG(LogTemp, Warning, TEXT("%f: I am aiming at %s"), Time, *AimDirection.ToString());
+	}
+	else {
+		auto Time = GetWorld()->TimeSeconds;
+		//UE_LOG(LogTemp, Warning, TEXT("%f: No solution found :("), Time);
+	}
 }
 
 void UTankAimingComponent::MoveBarrelToward(FVector AimDirection){
 	auto BarrelRotator = Barrel->GetForwardVector().Rotation();
 	auto AimAsRotator = AimDirection.Rotation();
 	auto DeltaRotator = AimAsRotator - BarrelRotator;
+
+	Barrel->Elevate(DeltaRotator.Pitch);
+	Turret->Rotate(DeltaRotator.Yaw);
 }
 
