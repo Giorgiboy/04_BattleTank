@@ -13,7 +13,8 @@ void ATankAIController::BeginPlay() {
 }
 
 void ATankAIController::Tick(float DeltaTime){
-	//GetControlledTank()->AimAt(GetPlayerTank()->GetActorLocation());
+	GetControlledTank()->AimAt(GetPlayerTank()->GetActorLocation());
+	//Aiming at player
 }
 
 ATank * ATankAIController::GetControlledTank() const {
